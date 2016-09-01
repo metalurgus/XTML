@@ -3,7 +3,11 @@ GSON analog for serialization/deserialization of Java objects into HTML code and
 
 [![](https://jitpack.io/v/metalurgus/XTML.svg)](https://jitpack.io/#metalurgus/XTML)
 
-Work in progress, non-working version so far.
+Work in progress, a basic data is supported so far.
+
+For the sample see 
+[TestClass.java](https://github.com/metalurgus/XTML/blob/master/app/src/main/java/com/metalurgus/xtml/app/TestClass.java)
+
 Contribution is welcome!
 
 ## How to use?
