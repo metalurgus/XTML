@@ -8,20 +8,7 @@ import java.lang.annotation.Target;
 /**
  * @author Vladislav Matvienko
  */
-
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface XTMLMapping {
-    Type type();
-    String name() default "";
-    int index() default -1;
-    String select() default "";
-    String id() default "";
-
-
-
-
-    enum Type {
-        TAG, ATTRIBUTE
-    }
+@Target(ElementType.TYPE)
+public @interface XTMLClass {
 }
