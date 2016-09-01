@@ -2,6 +2,7 @@ package com.metalurgus.xtml;
 
 import android.text.TextUtils;
 
+import com.github.drapostolos.typeparser.TypeParser;
 import com.metalurgus.xtml.annotation.XTMLClass;
 import com.metalurgus.xtml.annotation.XTMLMapping;
 
@@ -19,6 +20,8 @@ import java.util.Map;
  * @author Vladislav Matvienko
  */
 public class XTML {
+
+    static TypeParser parser = TypeParser.newBuilder().build();
 
     public static <T> T fromHTML(Element element, Class<T> classOfT) {
         return fromHTML(element, classOfT, null);
@@ -111,7 +114,7 @@ public class XTML {
                 case ATTRIBUTE:
                     String attribute = element.attr(mapping.name());
                     try {
-                        field.set(result, attribute);
+                        field.set(result, parser.parse(attribute, field.getType()));
                     } catch (IllegalAccessException e) {
                         //TODO: do something in this case later
                     }
@@ -122,4 +125,5 @@ public class XTML {
 
         return result;
     }
+
 }

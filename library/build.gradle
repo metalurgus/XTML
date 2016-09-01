@@ -22,4 +22,5 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile "org.jsoup:jsoup:1.9.2"
+    compile 'com.github.drapostolos:type-parser:type-parser-0.6.0'
 }

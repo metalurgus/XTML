@@ -9,9 +9,9 @@ import com.metalurgus.xtml.annotation.XTMLMapping;
 @XTMLClass
 public class TestClass {
 
-    public static String HTML = "<div test1 = 'pass1'><div id='testId' test2='pass2'/><div test2='pass3'/></div>";
+    public static String HTML = "<div test1 = '111'><div id='testId' test2='222'/><div test2='333'/></div>";
     @XTMLMapping(type = XTMLMapping.Type.ATTRIBUTE, name = "test1")
-    public String field1;
+    public int field1;
     @XTMLMapping(type = XTMLMapping.Type.TAG, select = "#testId")
     public InnerTestClass innerTestClass1;
     @XTMLMapping(type = XTMLMapping.Type.TAG, index = 1)
