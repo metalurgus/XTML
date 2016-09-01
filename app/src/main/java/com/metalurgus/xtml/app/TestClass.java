@@ -11,15 +11,21 @@ import java.util.List;
 @XTMLClass
 public class TestClass {
 
-    public static String HTML = "<div test1 = '111'>" +
-                                    "<div id='testId' test2='222'/>" +
-                                    "<div test2='333'/>" +
-                                    "<div id='testId2'>" +
-                                        "<div test2='333'/>" +
-                                        "<div test2='333'/>" +
-                                        "<div test2='333'/>" +
-                                    "</div>" +
-                                "</div>";
+    public static String HTML =
+            "<div test1 = '111'>" +
+                "<div id='testId' test2='222'/>" +
+                "<div test2='333'/>" +
+                "<div id='testId2'>" +
+                    "<div test2='333'/>" +
+                    "<div test2='333'/>" +
+                    "<div test2='333'/>" +
+                "</div>" +
+                "<div id='testId3'>" +
+                    "<div test2='333'>222.22</div>" +
+                    "<div test2='333'>333.33</div>" +
+                    "<div test2='333'>444.44</div>" +
+                "</div>" +
+            "</div>";
     @XTMLMapping(type = XTMLMapping.Type.ATTRIBUTE, name = "test1")
     public int field1;
     @XTMLMapping(type = XTMLMapping.Type.TAG, select = "#testId")
@@ -28,6 +34,8 @@ public class TestClass {
     public InnerTestClass innerTestClass2;
     @XTMLMapping(type = XTMLMapping.Type.COLLECTION, select = "#testId2 > *")
     public List<InnerTestClass> innerTestClassList;
+    @XTMLMapping(type = XTMLMapping.Type.COLLECTION, select = "#testId3 > *")
+    public List<Double> integerList;
 
     @XTMLClass
     class InnerTestClass {

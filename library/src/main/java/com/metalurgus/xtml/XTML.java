@@ -81,6 +81,7 @@ public class XTML {
             XTMLMapping mapping = fields.get(field);
             switch (mapping.type()) {
                 case TAG:
+                    //convert the whole element to the field
                     if (field.getType().isAnnotationPresent(XTMLClass.class)) {
                         if (!TextUtils.isEmpty(mapping.id())) {
                             try {
@@ -119,6 +120,7 @@ public class XTML {
                     }
                     break;
                 case ATTRIBUTE:
+                    //write attribute value to a field
                     String attribute = element.attr(mapping.name());
                     try {
                         field.set(result, parser.parse(attribute, field.getType()));
@@ -127,6 +129,7 @@ public class XTML {
                     }
                     break;
                 case COLLECTION:
+                    //write a set of nodes to a collection
                     if (Collection.class.isAssignableFrom(field.getType())) {
                         if (!TextUtils.isEmpty(mapping.select())) {
                             Collection collection = null;
