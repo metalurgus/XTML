@@ -11,7 +11,7 @@ For the sample see
 Contribution is welcome!
 
 ## How to use?
-Add dependency (`LongTextView` is available in jitpack.io):
+Add dependency (`XTML` is available in jitpack.io):
 ```
 repositories {
     maven { url "https://jitpack.io" }
