@@ -9,13 +9,11 @@ import com.metalurgus.xtml.annotation.XTMLMapping;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,40 +80,18 @@ public class XTML {
             switch (mapping.type()) {
                 case TAG:
                     //convert the whole element to the field
+                    Element targetElement = selectElementForMapping(element, mapping);
                     if (field.getType().isAnnotationPresent(XTMLClass.class)) {
-                        if (!TextUtils.isEmpty(mapping.id())) {
-                            try {
-                                field.set(result, fromHTML(element.getElementById(mapping.id()), field.getType(), result));
-                            } catch (IllegalAccessException e) {
-                                //TODO: do something in this case later
-                            }
-                        } else if (!TextUtils.isEmpty(mapping.select())) {
-                            Elements elements = element.select(mapping.select());
-                            if (mapping.index() >= 0) {
-                                try {
-                                    field.set(result, fromHTML(elements.get(mapping.index()), field.getType(), result));
-                                } catch (IllegalAccessException e) {
-                                    //TODO: do something in this case later
-                                }
-                            } else {
-                                try {
-                                    field.set(result, fromHTML(elements.get(0), field.getType(), result));
-                                } catch (IllegalAccessException e) {
-                                    //TODO: do something in this case later
-                                }
-                            }
-                        } else if (mapping.index() >= 0) {
-                            try {
-                                field.set(result, fromHTML(element.child(mapping.index()), field.getType(), result));
-                            } catch (IllegalAccessException e) {
-                                //TODO: do something in this case later
-                            }
-                        } else if (!TextUtils.isEmpty(mapping.name())) {
-                            try {
-                                field.set(result, fromHTML(element.select("[name=" + mapping.name() + "]").get(0), field.getType(), result));
-                            } catch (IllegalAccessException e) {
-                                //TODO: do something in this case later
-                            }
+                        try {
+                            field.set(result, fromHTML(targetElement, field.getType(), result));
+                        } catch (IllegalAccessException e) {
+                            //TODO: do something in this case later
+                        }
+                    } else {
+                        try {
+                            field.set(result, parser.parse(targetElement.ownText(), field.getType()));
+                        } catch (IllegalAccessException e) {
+                            //TODO: do something in this case later
                         }
                     }
                     break;
@@ -159,16 +135,12 @@ public class XTML {
                                         collection.add(parser.parse(e.ownText(), memberType));
                                     }
                                 }
-
-
                             }
 
-                            if(collection != null) {
-                                try {
-                                    field.set(result, collection);
-                                } catch (IllegalAccessException e) {
-                                    //TODO: do something in this case later
-                                }
+                            try {
+                                field.set(result, collection);
+                            } catch (IllegalAccessException e) {
+                                //TODO: do something in this case later
                             }
                         }
                     }
@@ -178,6 +150,24 @@ public class XTML {
 
 
         return result;
+    }
+
+    private static Element selectElementForMapping(Element element, XTMLMapping mapping) {
+        if (!TextUtils.isEmpty(mapping.id())) {
+            return element.getElementById(mapping.id());
+        } else if (!TextUtils.isEmpty(mapping.select())) {
+            Elements elements = element.select(mapping.select());
+            if (mapping.index() >= 0) {
+                return elements.get(mapping.index());
+            } else {
+                return elements.get(0);
+            }
+        } else if (mapping.index() >= 0) {
+            return element.child(mapping.index());
+        } else if (!TextUtils.isEmpty(mapping.name())) {
+            return element.select("[name=" + mapping.name() + "]").get(0);
+        }
+        return null;
     }
 
     private static Collection createConcreteObject(Class<?> type) {
