@@ -22,7 +22,7 @@ dependencies {
 ```
 
 Sample HTML to deserialize:
-```
+```html
  "<div test1 = '111'>" +
     "<div id='testId' test2='222'/>" +
     "<div test2='333'/>" +
@@ -40,14 +40,14 @@ Sample HTML to deserialize:
 ```
 
 Annotate your model class with `@XTMLClass` annotation:
-```
+```java
 @XTMLClass
 public class TestClass {
 ...
 }
 ```
 Annotate every field to be deserialized with `@XTMLMapping` annotation:
-```
+```java
 @XTMLMapping(type = XTMLMapping.Type.ATTRIBUTE, name = "test1")
 public int field1;
 //Non-siple data types are supported as well.
@@ -68,7 +68,7 @@ class InnerTestClass {
 }
 ```
 Call `XTML.fromHTML()`:
-```
+```java
 TestClass testClass = XTML.fromHTML(Jsoup.parse(TestClass.HTML).body().child(0), TestClass.class);
 ```
 `type` attribute:
