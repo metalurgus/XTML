@@ -11,18 +11,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface XTMLMapping {
-    Type type();
-    String name() default "";
-    int index() default -1;
-    String select() default "";
-    String id() default "";
-    String mappingName() default "";
-
-
-
-
-    enum Type {
-        TAG, ATTRIBUTE, COLLECTION
-    }
+public @interface XTMLMappings {
+    XTMLMapping[] value();
 }

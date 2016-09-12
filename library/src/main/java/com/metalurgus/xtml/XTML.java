@@ -5,10 +5,12 @@ import android.text.TextUtils;
 import com.github.drapostolos.typeparser.TypeParser;
 import com.metalurgus.xtml.annotation.XTMLClass;
 import com.metalurgus.xtml.annotation.XTMLMapping;
+import com.metalurgus.xtml.annotation.XTMLMappings;
 
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -31,11 +33,11 @@ public class XTML {
 
     static TypeParser parser = TypeParser.newBuilder().build();
 
-    public static <T> T fromHTML(Element element, Class<T> classOfT) {
-        return fromHTML(element, classOfT, null);
+    public static <T> T fromHTML(Element element, String mappingName, Class<T> classOfT) {
+        return fromHTML(element, mappingName, classOfT, null);
     }
 
-    private static <T> T fromHTML(Element element, Class<T> classOfT, Object constructorParameter) {
+    private static <T> T fromHTML(Element element, String mappingName, Class<T> classOfT, Object constructorParameter) {
         if (!classOfT.isAnnotationPresent(XTMLClass.class)) {
             throw new IllegalArgumentException("Target class is not annotated with @XTMLClass annotation");
         }
@@ -69,9 +71,7 @@ public class XTML {
         //find all fields marked with @XTMLMapping annotation
         Map<Field, XTMLMapping> fields = new HashMap<>();
         for (Field field : classOfT.getFields()) {
-            if (field.isAnnotationPresent(XTMLMapping.class)) {
-                fields.put(field, field.getAnnotation(XTMLMapping.class));
-            }
+            processField(field, fields, mappingName);
         }
 
         //write all fields to object
@@ -83,7 +83,7 @@ public class XTML {
                     Element targetElement = selectElementForMapping(element, mapping);
                     if (field.getType().isAnnotationPresent(XTMLClass.class)) {
                         try {
-                            field.set(result, fromHTML(targetElement, field.getType(), result));
+                            field.set(result, fromHTML(targetElement, mappingName, field.getType(), result));
                         } catch (IllegalAccessException e) {
                             //TODO: do something in this case later
                         }
@@ -130,7 +130,7 @@ public class XTML {
                                 Elements elements = element.select(mapping.select());
                                 for (Element e : elements) {
                                     if (memberType.isAnnotationPresent(XTMLClass.class)) {
-                                        collection.add(fromHTML(e, memberType, result));
+                                        collection.add(fromHTML(e, mappingName, memberType, result));
                                     } else {
                                         collection.add(parser.parse(e.ownText(), memberType));
                                     }
@@ -150,6 +150,40 @@ public class XTML {
 
 
         return result;
+    }
+
+    private static void processField(Field field, Map<Field, XTMLMapping> fields, String mappingName) {
+        if (field.isAnnotationPresent(XTMLMapping.class) || field.isAnnotationPresent(XTMLMappings.class)) {
+            for (Annotation a : field.getDeclaredAnnotations()) {
+                if (a instanceof XTMLMapping) {
+                    if (TextUtils.isEmpty(((XTMLMapping) a).mappingName()) && TextUtils.isEmpty(mappingName)) {
+                        fields.put(field, (XTMLMapping) a);
+                        break;
+                    }
+                    if (mappingName.equals(((XTMLMapping) a).mappingName())) {
+                        fields.put(field, (XTMLMapping) a);
+                        break;
+                    }
+                } else {
+                    if (a instanceof XTMLMappings) {
+                        XTMLMappings mappings = (XTMLMappings) a;
+                        for (XTMLMapping mapping : mappings.value()) {
+                            if (TextUtils.isEmpty(mapping.mappingName()) && TextUtils.isEmpty(mappingName)) {
+                                fields.put(field, mapping);
+                                break;
+                            }
+                            if (mappingName.equals(mapping.mappingName())) {
+                                fields.put(field, mapping);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (field.isAnnotationPresent(XTMLMappings.class)) {
+            XTMLMappings mappings = null;
+
+        }
     }
 
     private static Element selectElementForMapping(Element element, XTMLMapping mapping) {

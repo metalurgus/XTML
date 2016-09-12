@@ -14,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TestClass testClass = XTML.fromHTML(Jsoup.parse(TestClass.HTML).body().child(0), TestClass.class);
+        TestClass testClass1 = XTML.fromHTML(Jsoup.parse(TestClass.HTML_MAPPING_ONE).body().child(0), TestClass.MAPPING_ONE, TestClass.class);
+        TestClass testClass2 = XTML.fromHTML(Jsoup.parse(TestClass.HTML_MAPPING_TWO).body().child(0), TestClass.MAPPING_TWO, TestClass.class);
     }
 }
