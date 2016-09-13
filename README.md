@@ -2,6 +2,7 @@
 GSON analog for serialization/deserialization of Java objects into HTML code and back
 
 [![](https://jitpack.io/v/metalurgus/XTML.svg)](https://jitpack.io/#metalurgus/XTML)
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-XTML-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/4328)
 
 Work in progress, a basic data is supported so far.
 
