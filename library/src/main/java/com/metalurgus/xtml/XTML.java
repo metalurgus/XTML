@@ -70,12 +70,13 @@ public class XTML {
 
         //find all fields marked with @XTMLMapping annotation
         Map<Field, XTMLMapping> fields = new HashMap<>();
-        for (Field field : classOfT.getFields()) {
+        for (Field field : classOfT.getDeclaredFields()) {
             processField(field, fields, mappingName);
         }
 
         //write all fields to object
         for (Field field : fields.keySet()) {
+            field.setAccessible(true);
             XTMLMapping mapping = fields.get(field);
             switch (mapping.type()) {
                 case TAG:
@@ -201,7 +202,7 @@ public class XTML {
         } else if (!TextUtils.isEmpty(mapping.name())) {
             return element.select("[name=" + mapping.name() + "]").get(0);
         }
-        return null;
+        return element;
     }
 
     private static Collection createConcreteObject(Class<?> type) {
