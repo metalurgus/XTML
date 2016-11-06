@@ -98,7 +98,19 @@ public class XTML {
                     break;
                 case ATTRIBUTE:
                     //write attribute value to a field
-                    String attribute = element.attr(mapping.name());
+                    String attribute;
+
+                    if(!TextUtils.isEmpty(mapping.select())) {
+                        if(mapping.index() >= 0) {
+                            attribute = element.select(mapping.select()).get(mapping.index()).attr(mapping.name());
+                        } else {
+                            attribute = element.select(mapping.select()).get(0).attr(mapping.name());
+                        }
+                    } else if(mapping.index() >= 0) {
+                        attribute = element.child(mapping.index()).attr(mapping.name());
+                    } else {
+                        attribute = element.attr(mapping.name());
+                    }
                     try {
                         field.set(result, parser.parse(attribute, field.getType()));
                     } catch (IllegalAccessException e) {
