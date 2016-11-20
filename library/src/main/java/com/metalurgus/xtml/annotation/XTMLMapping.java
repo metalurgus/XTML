@@ -23,6 +23,6 @@ public @interface XTMLMapping {
 
 
     enum Type {
-        TAG, ATTRIBUTE, COLLECTION
+        TAG, ATTRIBUTE, COLLECTION, HTML
     }
 }

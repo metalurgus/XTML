@@ -91,29 +91,34 @@ public class XTML {
                     } else {
                         try {
                             field.set(result, parser.parse(targetElement.ownText(), field.getType()));
-                        } catch (IllegalAccessException e) {
+                        } catch (Exception e) {
+                            e.printStackTrace();
                             //TODO: do something in this case later
                         }
                     }
                     break;
                 case ATTRIBUTE:
                     //write attribute value to a field
-                    String attribute;
-
-                    if(!TextUtils.isEmpty(mapping.select())) {
-                        if(mapping.index() >= 0) {
-                            attribute = element.select(mapping.select()).get(mapping.index()).attr(mapping.name());
+                    String attribute = null;
+                    try {
+                        if (!TextUtils.isEmpty(mapping.select())) {
+                            if (mapping.index() >= 0) {
+                                attribute = element.select(mapping.select()).get(mapping.index()).attr(mapping.name());
+                            } else {
+                                attribute = element.select(mapping.select()).get(0).attr(mapping.name());
+                            }
+                        } else if (mapping.index() >= 0) {
+                            attribute = element.child(mapping.index()).attr(mapping.name());
                         } else {
-                            attribute = element.select(mapping.select()).get(0).attr(mapping.name());
+                            attribute = element.attr(mapping.name());
                         }
-                    } else if(mapping.index() >= 0) {
-                        attribute = element.child(mapping.index()).attr(mapping.name());
-                    } else {
-                        attribute = element.attr(mapping.name());
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     try {
                         field.set(result, parser.parse(attribute, field.getType()));
-                    } catch (IllegalAccessException e) {
+                    } catch (Exception e) {
+                        e.printStackTrace();
                         //TODO: do something in this case later
                     }
                     break;
@@ -143,9 +148,19 @@ public class XTML {
                                 Elements elements = element.select(mapping.select());
                                 for (Element e : elements) {
                                     if (memberType.isAnnotationPresent(XTMLClass.class)) {
-                                        collection.add(fromHTML(e, mappingName, memberType, result));
+                                        try {
+                                            collection.add(fromHTML(e, mappingName, memberType, result));
+                                        } catch (Exception ex) {
+                                            ex.printStackTrace();
+                                            //TODO: do something in this case later
+                                        }
                                     } else {
-                                        collection.add(parser.parse(e.ownText(), memberType));
+                                        try {
+                                            collection.add(parser.parse(e.ownText(), memberType));
+                                        } catch (Exception ex) {
+                                            ex.printStackTrace();
+                                            //TODO: do something in this case later
+                                        }
                                     }
                                 }
                             }
@@ -156,6 +171,15 @@ public class XTML {
                                 //TODO: do something in this case later
                             }
                         }
+                    }
+                    break;
+                case HTML:
+                    targetElement = selectElementForMapping(element, mapping);
+                    try {
+                        field.set(result, parser.parse(targetElement.html(), field.getType()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        //TODO: do something in this case later
                     }
                     break;
             }
