@@ -149,7 +149,7 @@ public class XTML {
                                 for (Element e : elements) {
                                     if (memberType.isAnnotationPresent(XTMLClass.class)) {
                                         try {
-                                            collection.add(fromHTML(e, mappingName, memberType, result));
+                                            collection.add(fromHTML(e, mapping.mappingName(), memberType, result));
                                         } catch (Exception ex) {
                                             ex.printStackTrace();
                                             //TODO: do something in this case later
@@ -193,7 +193,7 @@ public class XTML {
         if (field.isAnnotationPresent(XTMLMapping.class) || field.isAnnotationPresent(XTMLMappings.class)) {
             for (Annotation a : field.getDeclaredAnnotations()) {
                 if (a instanceof XTMLMapping) {
-                    if (TextUtils.isEmpty(((XTMLMapping) a).mappingName()) && TextUtils.isEmpty(mappingName)) {
+                    if (TextUtils.isEmpty(((XTMLMapping) a).mappingName()) || TextUtils.isEmpty(mappingName)) {
                         fields.put(field, (XTMLMapping) a);
                         break;
                     }
