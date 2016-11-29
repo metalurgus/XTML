@@ -86,6 +86,7 @@ public class XTML {
                         try {
                             field.set(result, fromHTML(targetElement, mappingName, field.getType(), result));
                         } catch (IllegalAccessException e) {
+                            e.printStackTrace();
                             //TODO: do something in this case later
                         }
                     } else {
@@ -168,6 +169,7 @@ public class XTML {
                             try {
                                 field.set(result, collection);
                             } catch (IllegalAccessException e) {
+                                e.printStackTrace();
                                 //TODO: do something in this case later
                             }
                         }
