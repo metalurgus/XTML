@@ -226,21 +226,26 @@ public class XTML {
     }
 
     private static Element selectElementForMapping(Element element, XTMLMapping mapping) {
-        if (!TextUtils.isEmpty(mapping.id())) {
-            return element.getElementById(mapping.id());
-        } else if (!TextUtils.isEmpty(mapping.select())) {
-            Elements elements = element.select(mapping.select());
-            if (mapping.index() >= 0) {
-                return elements.get(mapping.index());
-            } else {
-                return elements.get(0);
+        try {
+            if (!TextUtils.isEmpty(mapping.id())) {
+                return element.getElementById(mapping.id());
+            } else if (!TextUtils.isEmpty(mapping.select())) {
+                Elements elements = element.select(mapping.select());
+                if (mapping.index() >= 0) {
+                    return elements.get(mapping.index());
+                } else {
+                    return elements.get(0);
+                }
+            } else if (mapping.index() >= 0) {
+                return element.child(mapping.index());
+            } else if (!TextUtils.isEmpty(mapping.name())) {
+                return element.select("[name=" + mapping.name() + "]").get(0);
             }
-        } else if (mapping.index() >= 0) {
-            return element.child(mapping.index());
-        } else if (!TextUtils.isEmpty(mapping.name())) {
-            return element.select("[name=" + mapping.name() + "]").get(0);
+            return element;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return element;
+        return null;
     }
 
     private static Collection createConcreteObject(Class<?> type) {
