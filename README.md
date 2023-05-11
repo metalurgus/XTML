@@ -18,7 +18,7 @@ repositories {
     maven { url "https://jitpack.io" }
 }
 dependencies {
-	        compile 'com.github.metalurgus:XTML:0.0.6'
+    implementation 'com.github.metalurgus:XTML:0.0.6'
 }
 ```
 
