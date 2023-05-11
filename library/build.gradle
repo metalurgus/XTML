@@ -1,14 +1,11 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    compileSdkVersion 33
 
     defaultConfig {
-        minSdkVersion 9
-        targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion 14
+        targetSdkVersion 33
     }
     buildTypes {
         release {
@@ -22,8 +19,8 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile "org.jsoup:jsoup:1.9.2"
-    compile 'com.github.drapostolos:type-parser:type-parser-0.6.0'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    testImplementation 'junit:junit:4.13.2'
+    implementation "org.jsoup:jsoup:1.15.1"
+    implementation 'com.github.drapostolos:type-parser:type-parser-0.7.0'
 }

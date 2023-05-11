@@ -1,7 +1,8 @@
 package com.metalurgus.xtml.app;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.metalurgus.xtml.XTML;
 
