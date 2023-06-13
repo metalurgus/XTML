@@ -16,6 +16,7 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+    namespace 'com.metalurgus.xtml'
 }
 
 dependencies {
