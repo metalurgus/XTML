@@ -37,6 +37,37 @@ public class XTML {
         return fromHTML(element, mappingName, classOfT, null);
     }
 
+    public static <T> List<T> listFromHTML(Element element, XTMLMapping mapping, Class<T> classOfT) {
+        if(mapping == null) {
+            throw new IllegalArgumentException("mapping cannot be null");
+        }
+        if (!TextUtils.isEmpty(mapping.select())) {
+            List<T> list = new ArrayList<>();
+
+            Elements elements = element.select(mapping.select());
+            for (Element e : elements) {
+                if (classOfT.isAnnotationPresent(XTMLClass.class)) {
+                    try {
+                        list.add(fromHTML(e, mapping.mappingName(), classOfT, null));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        //TODO: do something in this case later
+                    }
+                } else {
+                    try {
+                        list.add(parser.parse(e.ownText(), classOfT));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        //TODO: do something in this case later
+                    }
+                }
+            }
+            return list;
+        } else {
+            throw new IllegalArgumentException("For list deserialization mapping has to have select parameter");
+        }
+    }
+
     private static <T> T fromHTML(Element element, String mappingName, Class<T> classOfT, Object constructorParameter) {
         if (!classOfT.isAnnotationPresent(XTMLClass.class)) {
             throw new IllegalArgumentException("Target class is not annotated with @XTMLClass annotation");
