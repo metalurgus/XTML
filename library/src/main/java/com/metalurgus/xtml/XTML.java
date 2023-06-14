@@ -18,6 +18,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +39,7 @@ public class XTML {
     }
 
     public static <T> List<T> listFromHTML(Element element, XTMLMapping mapping, Class<T> classOfT) {
-        if(mapping == null) {
+        if (mapping == null) {
             throw new IllegalArgumentException("mapping cannot be null");
         }
         if (!TextUtils.isEmpty(mapping.select())) {
@@ -101,7 +102,7 @@ public class XTML {
 
         //find all fields marked with @XTMLMapping annotation
         Map<Field, XTMLMapping> fields = new HashMap<>();
-        for (Field field : classOfT.getDeclaredFields()) {
+        for (Field field : getAllFields(classOfT)) {
             processField(field, fields, mappingName);
         }
 
@@ -287,6 +288,14 @@ public class XTML {
         } else if (Queue.class.isAssignableFrom(type)) {
             return new ArrayDeque();
         } else return null;
+    }
+
+    private static List<Field> getAllFields(Class<?> type) {
+        List<Field> fields = new ArrayList<Field>();
+        for (Class<?> c = type; c != null; c = c.getSuperclass()) {
+            fields.addAll(Arrays.asList(c.getDeclaredFields()));
+        }
+        return fields;
     }
 
 }
