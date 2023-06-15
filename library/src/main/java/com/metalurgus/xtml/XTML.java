@@ -1,6 +1,7 @@
 package com.metalurgus.xtml;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.github.drapostolos.typeparser.TypeParser;
 import com.metalurgus.xtml.annotation.XTMLClass;
@@ -32,6 +33,7 @@ import java.util.Set;
  */
 public class XTML {
 
+    private static final String TAG = XTML.class.getSimpleName();
     static TypeParser parser = TypeParser.newBuilder().build();
 
     public static <T> T fromHTML(Element element, String mappingName, Class<T> classOfT) {
@@ -100,122 +102,151 @@ public class XTML {
             throw new IllegalArgumentException("Failed to instantiate a target class", e);
         }
 
-        //find all fields marked with @XTMLMapping annotation
-        Map<Field, XTMLMapping> fields = new HashMap<>();
-        for (Field field : getAllFields(classOfT)) {
-            processField(field, fields, mappingName);
+        List<Class<?>> interfaceList = Arrays.asList(classOfT.getInterfaces());
+
+        //PreProcess
+        if (interfaceList.contains(PreProcessor.class)) {
+            try {
+                element = (Element) PreProcessor.class.getDeclaredMethod("preProcess", Element.class).invoke(result, element);
+            } catch (Exception e) {
+                Log.d(TAG, "failed to PreProcess element", e);
+            }
         }
 
-        //write all fields to object
-        for (Field field : fields.keySet()) {
-            field.setAccessible(true);
-            XTMLMapping mapping = fields.get(field);
-            switch (mapping.type()) {
-                case TAG:
-                    //convert the whole element to the field
-                    Element targetElement = selectElementForMapping(element, mapping);
-                    if (field.getType().isAnnotationPresent(XTMLClass.class)) {
-                        try {
-                            field.set(result, fromHTML(targetElement, mappingName, field.getType(), result));
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                            //TODO: do something in this case later
-                        }
-                    } else {
-                        try {
-                            field.set(result, parser.parse(targetElement.ownText(), field.getType()));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            //TODO: do something in this case later
-                        }
-                    }
-                    break;
-                case ATTRIBUTE:
-                    //write attribute value to a field
-                    String attribute = null;
-                    try {
-                        if (!TextUtils.isEmpty(mapping.select())) {
-                            if (mapping.index() >= 0) {
-                                attribute = element.select(mapping.select()).get(mapping.index()).attr(mapping.name());
-                            } else {
-                                attribute = element.select(mapping.select()).get(0).attr(mapping.name());
-                            }
-                        } else if (mapping.index() >= 0) {
-                            attribute = element.child(mapping.index()).attr(mapping.name());
-                        } else {
-                            attribute = element.attr(mapping.name());
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        field.set(result, parser.parse(attribute, field.getType()));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        //TODO: do something in this case later
-                    }
-                    break;
-                case COLLECTION:
-                    //write a set of nodes to a collection
-                    if (Collection.class.isAssignableFrom(field.getType())) {
-                        if (!TextUtils.isEmpty(mapping.select())) {
-                            Collection collection = null;
-                            if (Modifier.isAbstract(field.getType().getModifiers())) {
-                                collection = createConcreteObject(field.getType());
-                            } else {
-                                try {
-                                    collection = (Collection) field.getType().newInstance();
-                                } catch (InstantiationException e) {
-                                    e.printStackTrace();
-                                } catch (IllegalAccessException e) {
-                                    e.printStackTrace();
-                                }
-                            }
+        //Custom Deserializer
+        if (interfaceList.contains(Deserializer.class)) {
+            try {
+                Deserializer.class.getDeclaredMethod("deserialize", Element.class).invoke(result, element);
+            } catch (Exception e) {
+                Log.d(TAG, "failed to PreProcess element", e);
+            }
+        } else {
+            //find all fields marked with @XTMLMapping annotation
+            Map<Field, XTMLMapping> fields = new HashMap<>();
+            for (Field field : getAllFields(classOfT)) {
+                processField(field, fields, mappingName);
+            }
 
-                            if (collection == null) {
-                                return null;
-                            } else {
-                                ParameterizedType genericMemberType = (ParameterizedType) field.getGenericType();
-                                Class<?> memberType = (Class<?>) genericMemberType.getActualTypeArguments()[0];
-
-                                Elements elements = element.select(mapping.select());
-                                for (Element e : elements) {
-                                    if (memberType.isAnnotationPresent(XTMLClass.class)) {
-                                        try {
-                                            collection.add(fromHTML(e, mapping.mappingName(), memberType, result));
-                                        } catch (Exception ex) {
-                                            ex.printStackTrace();
-                                            //TODO: do something in this case later
-                                        }
-                                    } else {
-                                        try {
-                                            collection.add(parser.parse(e.ownText(), memberType));
-                                        } catch (Exception ex) {
-                                            ex.printStackTrace();
-                                            //TODO: do something in this case later
-                                        }
-                                    }
-                                }
-                            }
-
+            //write all fields to object
+            for (Field field : fields.keySet()) {
+                field.setAccessible(true);
+                XTMLMapping mapping = fields.get(field);
+                switch (mapping.type()) {
+                    case TAG:
+                        //convert the whole element to the field
+                        Element targetElement = selectElementForMapping(element, mapping);
+                        if (field.getType().isAnnotationPresent(XTMLClass.class)) {
                             try {
-                                field.set(result, collection);
+                                field.set(result, fromHTML(targetElement, mappingName, field.getType(), result));
                             } catch (IllegalAccessException e) {
                                 e.printStackTrace();
                                 //TODO: do something in this case later
                             }
+                        } else {
+                            try {
+                                field.set(result, parser.parse(targetElement.ownText(), field.getType()));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                //TODO: do something in this case later
+                            }
                         }
-                    }
-                    break;
-                case HTML:
-                    targetElement = selectElementForMapping(element, mapping);
-                    try {
-                        field.set(result, parser.parse(targetElement.html(), field.getType()));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        //TODO: do something in this case later
-                    }
-                    break;
+                        break;
+                    case ATTRIBUTE:
+                        //write attribute value to a field
+                        String attribute = null;
+                        try {
+                            if (!TextUtils.isEmpty(mapping.select())) {
+                                if (mapping.index() >= 0) {
+                                    attribute = element.select(mapping.select()).get(mapping.index()).attr(mapping.name());
+                                } else {
+                                    attribute = element.select(mapping.select()).get(0).attr(mapping.name());
+                                }
+                            } else if (mapping.index() >= 0) {
+                                attribute = element.child(mapping.index()).attr(mapping.name());
+                            } else {
+                                attribute = element.attr(mapping.name());
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            field.set(result, parser.parse(attribute, field.getType()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            //TODO: do something in this case later
+                        }
+                        break;
+                    case COLLECTION:
+                        //write a set of nodes to a collection
+                        if (Collection.class.isAssignableFrom(field.getType())) {
+                            if (!TextUtils.isEmpty(mapping.select())) {
+                                Collection collection = null;
+                                if (Modifier.isAbstract(field.getType().getModifiers())) {
+                                    collection = createConcreteObject(field.getType());
+                                } else {
+                                    try {
+                                        collection = (Collection) field.getType().newInstance();
+                                    } catch (InstantiationException e) {
+                                        e.printStackTrace();
+                                    } catch (IllegalAccessException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                if (collection == null) {
+                                    return null;
+                                } else {
+                                    ParameterizedType genericMemberType = (ParameterizedType) field.getGenericType();
+                                    Class<?> memberType = (Class<?>) genericMemberType.getActualTypeArguments()[0];
+
+                                    Elements elements = element.select(mapping.select());
+                                    for (Element e : elements) {
+                                        if (memberType.isAnnotationPresent(XTMLClass.class)) {
+                                            try {
+                                                collection.add(fromHTML(e, mapping.mappingName(), memberType, result));
+                                            } catch (Exception ex) {
+                                                ex.printStackTrace();
+                                                //TODO: do something in this case later
+                                            }
+                                        } else {
+                                            try {
+                                                collection.add(parser.parse(e.ownText(), memberType));
+                                            } catch (Exception ex) {
+                                                ex.printStackTrace();
+                                                //TODO: do something in this case later
+                                            }
+                                        }
+                                    }
+                                }
+
+                                try {
+                                    field.set(result, collection);
+                                } catch (IllegalAccessException e) {
+                                    e.printStackTrace();
+                                    //TODO: do something in this case later
+                                }
+                            }
+                        }
+                        break;
+                    case HTML:
+                        targetElement = selectElementForMapping(element, mapping);
+                        try {
+                            field.set(result, parser.parse(targetElement.html(), field.getType()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            //TODO: do something in this case later
+                        }
+                        break;
+                }
+            }
+        }
+
+        //PostProcess
+        if (interfaceList.contains(PostProcessor.class)) {
+            try {
+                PostProcessor.class.getDeclaredMethod("postProcess").invoke(result);
+            } catch (Exception e) {
+                Log.d(TAG, "failed to PostProcess object", e);
             }
         }
 
